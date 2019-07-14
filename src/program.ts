@@ -87,15 +87,18 @@ const renderStatusChange$ = command$.pipe(tap(n => console.log(`Status is now: $
 //     tap(({count, countUp, countDiff}) => programmaticCommandSubject.next({count: count + countDiff * (countUp ? 1 : -1)}))
 //   );
 
+// SetTimeout is purely for console.log ORDERING. I want the console.log from HTTP and WS server to show up first.
+setTimeout(() => {
+  merge(
+    // Input side effect
+    renderCommandChange$,
+    renderStatusChange$
+    // Outputs side effect
+    // commandFromTick$
+  )
+    .subscribe();
+}, 10);
 
-merge(
-  // Input side effect
-  renderCommandChange$,
-  renderStatusChange$,
-  // Outputs side effect
-  // commandFromTick$
-)
-  .subscribe();
 
 // == HELPER ===============================================================
 // == CUSTOM OPERATORS =====================================================

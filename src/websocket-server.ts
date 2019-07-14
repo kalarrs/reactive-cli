@@ -2,6 +2,7 @@ import { server } from "websocket";
 import * as http from "http";
 import { Observable, Subject } from "rxjs";
 import { filter } from "rxjs/internal/operators";
+import { AddressInfo } from "net";
 
 type RequestType = "event" | "data";
 
@@ -25,7 +26,8 @@ export class WebSocketServer {
   btnPause$ = this.events$.pipe(filter(ev => ev.action === "pause"));
 
   constructor(private httpServer: http.Server) {
-    console.log(`  Websocket Server is running at http://localhost:${this.httpServer.address()}`);
+    const {port} = this.httpServer.address() as AddressInfo;
+    console.log(`  Websocket Server is running at http://localhost:${port}`);
     this.wsServer.on("request", req => {
       const connection = req.accept(null, req.origin);
       connection.on("message", message => {
