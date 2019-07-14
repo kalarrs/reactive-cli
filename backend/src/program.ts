@@ -14,10 +14,10 @@ import { WebSocketServer } from "./websocket-server";
 import { ExpressServer } from "./express-server";
 
 enum CliStatus {
-  Stopped,
-  Running,
-  Paused,
-  Completed
+  Stopped = "Stopped",
+  Running = "Running",
+  Paused = "Paused",
+  Completed = "Completed"
 }
 
 enum CliStateKeys {
@@ -73,7 +73,7 @@ const process$ = cliState$.pipe(queryChange<CliState, CliState[CliStateKeys.Proc
 
 // == UI INPUTS ===========================================================
 const renderCommandChange$ = command$.pipe(tap(n => console.log(`Command is now: ${n}`)));
-const renderStatusChange$ = command$.pipe(tap(n => console.log(`Status is now: ${n}`)));
+const renderStatusChange$ = status$.pipe(tap(n => console.log(`Status is now: ${n}`)));
 
 
 // == UI OUTPUTS ==========================================================

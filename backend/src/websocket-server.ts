@@ -32,6 +32,7 @@ export class WebSocketServer {
       const connection = req.accept(null, req.origin);
       connection.on("message", message => {
         if (message.type === "utf8") {
+          console.log("===WS Message===");
           const obj = JSON.parse(message.utf8Data);
           this.requestSubject.next(obj);
         }
