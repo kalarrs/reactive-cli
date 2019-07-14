@@ -10,7 +10,8 @@ import {
   tap,
   withLatestFrom
 } from "rxjs/internal/operators";
-import { WebSocketServer } from "./WebSocketServer";
+import { WebSocketServer } from "./websocket-server";
+import { ExpressServer } from "./express-server";
 
 enum CliStatus {
   Stopped,
@@ -39,10 +40,11 @@ interface CliState {
 const initialCliState: CliState = {
   command: null,
   status: CliStatus.Stopped,
-  process: null,
+  process: null
 };
 
-const webSocketServer = new WebSocketServer();
+const expressServer = new ExpressServer();
+const webSocketServer = new WebSocketServer(expressServer.httpServer);
 
 // == BASE OBSERVABLES  ====================================================
 // == SOURCE OBSERVABLES ==================================================
@@ -75,15 +77,15 @@ const renderStatusChange$ = command$.pipe(tap(n => console.log(`Status is now: $
 
 
 // == UI OUTPUTS ==========================================================
-const commandFromTick$ = process$
-  .pipe(
-    withLatestFrom(counterState$, (_, counterState) => ({
-      [ConterStateKeys.count]: counterState.count,
-      [ConterStateKeys.countUp]: counterState.countUp,
-      [ConterStateKeys.countDiff]: counterState.countDiff
-    }) ),
-    tap(({count, countUp, countDiff}) => programmaticCommandSubject.next( {count: count + countDiff * (countUp ? 1 : -1)}) )
-  );
+// const commandFromTick$ = process$
+//   .pipe(
+//     withLatestFrom(counterState$, (_, counterState) => ({
+//       [ConterStateKeys.count]: counterState.count,
+//       [ConterStateKeys.countUp]: counterState.countUp,
+//       [ConterStateKeys.countDiff]: counterState.countDiff
+//     })),
+//     tap(({count, countUp, countDiff}) => programmaticCommandSubject.next({count: count + countDiff * (countUp ? 1 : -1)}))
+//   );
 
 
 merge(
@@ -91,7 +93,7 @@ merge(
   renderCommandChange$,
   renderStatusChange$,
   // Outputs side effect
-  commandFromTick$
+  // commandFromTick$
 )
   .subscribe();
 
@@ -105,35 +107,3 @@ function queryChange<T, I>(key: string): UnaryFunction<Observable<T>, Observable
     distinctUntilChanged<I>()
   );
 }
-
-
-/*
-
-import express from "express";
-import compression from "compression";  // compresses requests
-import bodyParser from "body-parser";
-import path from "path";
-
-// Controllers (route handlers)
-import * as apiController from "./controllers/api";
-
-// Create Express server
-const app = express();
-
-// Express configuration
-app.set("port", process.env.PORT || 3000);
-app.set("view engine", "pug");
-app.use(compression());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: true}));
-
-app.use(express.static(path.join(__dirname, "public"), {maxAge: 31557600000}));
-
-/**
- * API examples routes.
- * /
-app.get("/api", apiController.getApi);
-
-export default app;
-
- */

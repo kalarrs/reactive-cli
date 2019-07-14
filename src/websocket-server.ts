@@ -3,7 +3,6 @@ import * as http from "http";
 import { Observable, Subject } from "rxjs";
 import { filter } from "rxjs/internal/operators";
 
-
 type RequestType = "event" | "data";
 
 interface WebSocketRequest {
@@ -16,10 +15,7 @@ interface Event extends WebSocketRequest {
 }
 
 export class WebSocketServer {
-  private port = 1337;
-
   private requestSubject = new Subject();
-  private httpServer = http.createServer();
   private wsServer = new server({httpServer: this.httpServer});
 
   request$ = this.requestSubject.asObservable();
@@ -28,10 +24,8 @@ export class WebSocketServer {
   btnStart$ = this.events$.pipe(filter(ev => ev.action === "start"));
   btnPause$ = this.events$.pipe(filter(ev => ev.action === "pause"));
 
-  constructor() {
-    this.httpServer.listen(this.port, () => {
-      console.log(`  Websocket Server is running at http://localhost:${this.port}`);
-    });
+  constructor(private httpServer: http.Server) {
+    console.log(`  Websocket Server is running at http://localhost:${this.httpServer.address()}`);
     this.wsServer.on("request", req => {
       const connection = req.accept(null, req.origin);
       connection.on("message", message => {
