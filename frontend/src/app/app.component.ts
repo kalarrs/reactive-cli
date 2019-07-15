@@ -1,7 +1,7 @@
 import {Component} from '@angular/core';
 import {webSocket} from 'rxjs/webSocket';
 import {merge, Observable, Subject} from 'rxjs';
-import {map, mapTo, scan, shareReplay, startWith} from 'rxjs/operators';
+import {map, mapTo, scan, shareReplay, startWith, tap} from 'rxjs/operators';
 import {FormBuilder, FormGroup} from '@angular/forms';
 
 
@@ -27,14 +27,22 @@ export class AppComponent {
 
   commandControl = this.commandFormGroup.get('command');
 
-  // subject = webSocket('ws://localhost:3000');
+  webSocketSubject = webSocket('ws://localhost:3000');
 
   initialDemoState: DemoState = {
     command: null,
     process: null
   };
 
-  commandChange$ = this.commandControl.valueChanges;
+  commandChange$ = this.commandControl.valueChanges
+    .pipe(tap(command => {
+      this.webSocketSubject.next({
+        type: 'command',
+        value: {
+          command
+        }
+      });
+    }));
 
   processChangeSubject = new Subject();
   processChange$ = this.processChangeSubject.asObservable();
@@ -44,28 +52,10 @@ export class AppComponent {
     this.processChange$
   );
 
-  state$: Observable<DemoState> = this.stateCommands$.pipe(
-    startWith(this.initialDemoState),
-    scan((currentDemoState: DemoState, command): DemoState => {
-      return {...currentDemoState, ...command};
-    }),
-    shareReplay(1)
-  );
+  state$: Observable<DemoState> = this.webSocketSubject.asObservable()
+    .pipe(map(v => v as DemoState));
 
   constructor(private fb: FormBuilder) {
-
-    this.commandControl.valueChanges.subscribe(e => console.log(e));
-    /*
-    console.log('WHAT?');
-    this.subject.subscribe(res => console.log('Got a response!', res));
-
-    this.subject.next({
-      type: 'event',
-      action: 'pause'
-    });
-
-    // this.subject.complete();
-     */
   }
 
   execute(command: string) {
