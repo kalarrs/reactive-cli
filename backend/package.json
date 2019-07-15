@@ -4,6 +4,9 @@
   "description": "A starting point for Automate Everything",
   "author": "Kalarrs Topham",
   "license": "MIT",
+  "engines": {
+    "node": ">=10.16"
+  },
   "scripts": {
     "start": "npm run serve",
     "build": "npm run build-ts && npm run tslint",
